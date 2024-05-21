@@ -1,0 +1,31 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2024 Simen Strange <https://github.com/dxlr8r/wrax>
+# SPDX-License-Identifier: MIT
+# Version: 0.1.0
+
+set -eo pipefail
+
+_empty_or_ws() {
+  while test "$#" -gt 0; do
+    printf '%s' "$1" | awk '{if ($0 ~ /(^$|[[:space:]])/) exit 1} END {if (NR != 1) exit 1}'
+    ret=$?; test $ret -gt 0 && return $ret
+    shift
+  done
+}
+
+_empty_or_ws "$1" || { printf '%s\n' '1st argument empty/undefined'; exit 1; }
+_empty_or_ws "$2" || { printf '%s\n' '2nd argument empty/undefined'; exit 1; }
+
+test -f "$1" || { printf 'Argument `%s` not a file\n' "$1" ;  exit 1; }
+
+if base64 --version 2>&1 | head -n1 | grep -q 'GNU'; then
+  src=$(base64 -w0 "$1")
+else
+  src=$(base64 -i "$1")
+fi
+
+target="$2"
+
+printf '%b\n' "cat <<'END_OF_WRCP' | base64 --decode | tee "$target" >/dev/null
+$src
+END_OF_WRCP"
