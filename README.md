@@ -71,6 +71,8 @@ Description: converts `file` to a string/heredoc, and copies it to dest.
 
 ### wrsudo
 
+Requires passwordless `sudo` escalation.
+
 ```sh
 wrsudo
 ```
